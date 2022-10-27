@@ -1,0 +1,25 @@
+------------------------------------
+DOCUMENT TO SETUP PROJECT:
+------------------------------------
+
+I. Setup environment:
+   # pip3 install virtualenv
+
+II. Path of project dir(open terminal):
+   1. clone new environment:
+      # virtualenv venv
+
+   2. Activate venv:
+      # source venv/Scripts/activate
+
+   3. Install modules:
+      # pip install -r requirements.txt
+
+III. Run the project:
+   - # python manage.py runserver
+   - site: http://127.0.0.1:8000/ 
+   - admin: http://127.0.0.1:8000/admin 
+
+IV. Authentication:
+   - username: administrator
+   - password: administrator
