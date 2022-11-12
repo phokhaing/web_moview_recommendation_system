@@ -116,7 +116,6 @@ def recommend(request):
     if not request.user.is_active:
         raise Http404
 
-
     movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
 
     new_user=movie_rating.user_id.unique().shape[0]
@@ -129,16 +128,19 @@ def recommend(request):
 
 
     userRatings = movie_rating.pivot_table(index=['user_id'],columns=['movie_id'],values='rating')
-    userRatings = userRatings.fillna(0,axis=1)
-    corrMatrix = userRatings.corr(method='pearson')
+    userRatings = userRatings.fillna(0,axis=1) # replace value NaN to 0
+    corrMatrix = userRatings.corr(method='pearson') # Compute pairwise correlation of columns, excluding NA/null values.
 
     user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
+    
     user_filtered = [tuple(x) for x in user.values]
     movie_id_watched = [each[0] for each in user_filtered]
 
     similar_movies = pd.DataFrame()
     for movie,rating in user_filtered:
         similar_movies = similar_movies.append(get_similar(movie,rating,corrMatrix),ignore_index = True)
+
+    
 
     movies_id = list(similar_movies.sum().sort_values(ascending=False).index)
     movies_id_recommend = [each for each in movies_id if each not in movie_id_watched]
