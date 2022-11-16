@@ -12,7 +12,7 @@ class MovieAdmin(admin.ModelAdmin):
 # admin.site.register(Myrating)
 @admin.register(Myrating)
 class MyratingAdmin(admin.ModelAdmin):
-    list_display = ['user', 'movie', 'rating']
+    list_display = ['id', 'user', 'movie', 'rating']
     list_display_links = ['user', 'movie']
 
 

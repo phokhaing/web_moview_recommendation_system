@@ -18,6 +18,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+admin.site.site_header = 'Web Movie Recommendation'# default: "Django Administration"
+# admin.site.index_title = 'Features area' # default: "Site administration"
+admin.site.site_title = 'Web Movie Recommendation' # default: "Django site admin"
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('recommend.urls')),
