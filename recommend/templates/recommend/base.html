@@ -102,6 +102,11 @@
                     </li>
                 {% else %}
                     <li>
+                        <a href="{% url 'admin:index' %}">
+                            <span aria-hidden="true"></span>&nbsp;Welcome {{user.username}}
+                        </a>
+                    </li>
+                    <li>
                         <a href="{% url 'logout' %}">
                             <span aria-hidden="true"></span>&nbsp;Logout
                         </a>
