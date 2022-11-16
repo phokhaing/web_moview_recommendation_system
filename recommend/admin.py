@@ -6,7 +6,7 @@ from .models import Movie, Myrating, MyList
 # admin.site.register(Movie)
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
-    list_display = ['title', 'genre', 'movie_logo']
+    list_display = ['id', 'title', 'genre', 'movie_logo']
     list_display_links = ['title', 'genre']
 
 # admin.site.register(Myrating)
