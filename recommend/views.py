@@ -147,11 +147,13 @@ def get_similar(movie_id,rating,corrMatrix):
 # Recommendation Algorithm
     # Collaborative filtering
     # User-Based filtering
+
 # Flow:
     # 1. most movies rated & watched, will be recommended to users at top
     # 2. For users who rated(min score: 1) or watched the movies(ex:a,b,c), then those movies(ex:a,b,c) will not show at recommendation feature for them anymore
     # 3. others users will see all the movies(a,b,c) rated at recommendation feature, except own's movies rated and watched.
     # 4. Checking on similar_ratings
+    
 # deafault:
     # 1. new user who not yet rate any movies, 
     # when they access the recommendation feature, 
