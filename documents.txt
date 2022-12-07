@@ -27,3 +27,5 @@ IV. Authentication:
 V. JupyterLab:
    - # pip install jupyterlab
    - # jupyter-lab: for run JupyterLab
+
+- Ref: https://github.com/wiqaaas/youtube/blob/master/Machine_Learning_from_Scratch/Movie_Recommender_from_Scratch/Movie%20Recommender%20System%20from%20Scratch.ipynb 

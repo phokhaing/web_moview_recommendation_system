@@ -124,7 +124,10 @@ def get_similar(movie_id,rating,corrMatrix):
         # 23    0.5
         # Name: 21, dtype: float64
 
-    similar_ratings = corrMatrix[movie_id]*(rating-2.5)
+    # if a user has rated a movie as bad, we want al others similar movie to go down in the list
+    # if rating below 3(dislike) will push all those towards even more negative side only that why -2.5
+    # if rating positive 3,4 or 5 (like) will keep them on the top of list
+    similar_ratings = corrMatrix[movie_id]*(rating-2.5) 
     print(f'--------- similar_ratings movie_id:{movie_id} --------------', similar_ratings, sep="\n")
     #output: 
         # movie_id
@@ -145,8 +148,24 @@ def get_similar(movie_id,rating,corrMatrix):
     return similar_ratings
 
 # Recommendation Algorithm
-    # Collaborative filtering
-    # User-Based filtering 
+    # 1. User-Based filtering(user to user)
+    # 2. Collaborative filtering
+        # 1. User-to-User collaborative filtering
+        # 1. Item-to-Item collaborative filtering (item to item similar)
+
+    #. Noted:
+        #  this algorithm using Item-to-Item collaborative filtering
+        #  find similar movies base on movie itself that rating given by other users
+        # Item-to-Item generally work much better than User-to-User a method,
+            # the reason is generally you would see that there are lots more users in a system then the number
+            # of the products or categories in that system, also user prference are dynamic and something that you might
+            # you might like in your early teens you might not like it growing older whereas in an Item-to-Item method
+            # the item stay the same respective of the time right (horror movie still the horror movie after 10 Ys)
+
+        #. ref: 
+            # https://www.youtube.com/watch?v=3ecNC-So0r4 
+            # https://github.com/codeheroku/Introduction-to-Machine-Learning/blob/master/Collaborative%20Filtering/Movie%20Lens%20Collaborative%20Filtering.ipynb
+        
 
 # current flow:
     # 1. new user who not yet rate any movies, when they access the recommendation feature, it will auto rate(score: 0) on a movie name "12 Years a Slave"
