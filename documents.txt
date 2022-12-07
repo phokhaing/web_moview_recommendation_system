@@ -23,3 +23,7 @@ III. Run the project:
 IV. Authentication:
    - username: administrator
    - password: administrator
+
+V. JupyterLab:
+   - # pip install jupyterlab
+   - # jupyter-lab: for run JupyterLab
