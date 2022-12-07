@@ -167,11 +167,16 @@ def recommend(request):
     if not request.user.is_active:
         raise Http404
 
+    movies=pd.DataFrame(list(Movie.objects.all().values()))
     movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
     print('---- movie_rating ---- ', movie_rating, sep='\n')
 
     movie_list = []
     if len(movie_rating) > 0:
+
+        # save data as csv file
+        movies.to_csv('movies.csv', index=False)
+        movie_rating.to_csv('movie_rating.csv', index=False)
 
         new_user=movie_rating.user_id.unique().shape[0]
         print('---- new_user ---- ', new_user, sep='\n')
@@ -216,6 +221,9 @@ def recommend(request):
         if len(user) > 0:
             user = user.drop(['user_id','id'],axis=1)
             print('--------- user DataFrame --------------', user, sep="\n")
+
+            # save Myrating as csv file
+            user.to_csv('Myrating.csv', index=False)
             # output: 
                 #     movie_id  rating
                 # 0         21       4
