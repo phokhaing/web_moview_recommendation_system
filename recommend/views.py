@@ -201,7 +201,6 @@ def recommend(request):
         print('---- new_user ---- ', new_user, sep='\n')
 
         current_user_id= request.user.id
-
         # if new user not rated any movie
         # if current_user_id>new_user:
         #     movie=Movie.objects.get(id=19)
@@ -238,11 +237,11 @@ def recommend(request):
         # user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
         user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values()))
         if len(user) > 0:
+            user.to_csv('Myrating.csv', index=False)
             user = user.drop(['user_id','id'],axis=1)
             print('--------- user DataFrame --------------', user, sep="\n")
 
             # save Myrating as csv file
-            user.to_csv('Myrating.csv', index=False)
             # output: 
                 #     movie_id  rating
                 # 0         21       4
