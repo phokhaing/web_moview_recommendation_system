@@ -20,7 +20,13 @@ def index(request):
         movies = Movie.objects.filter(Q(title__icontains=query)).distinct()
         return render(request, 'recommend/list.html', {'movies': movies})
 
-    return render(request, 'recommend/list.html', {'movies': movies})
+    movie_list = collaborative_filtering(request)
+    context = {
+        'recommended_movie': len(movie_list),
+        'movies': movies
+    }
+
+    return render(request, 'recommend/list.html', context)
 
 
 # Show details of the movie
@@ -178,13 +184,7 @@ def get_similar(movie_id,rating,corrMatrix):
     # User-Based filtering that have similar taste, or rated similar movies, 
         # ex: user (A) & (B) have similar rated to movie (Frozen), they both are considered users having similar likes & dislike
         # then user (A) has rated 5 for movie (Advenger), next time when user (B) request for a recommendation the system will recommend 'Advenger' to user (B)
-
-def recommend(request):
-
-    if not request.user.is_authenticated:
-        return redirect("login")
-    if not request.user.is_active:
-        raise Http404
+def collaborative_filtering(request):
 
     movies=pd.DataFrame(list(Movie.objects.all().values()))
     movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
@@ -348,7 +348,18 @@ def recommend(request):
 
             movie_list=list(Movie.objects.filter(id__in = movies_id_recommend).order_by(preserved)[:10])
             print('--------- movie_list -------------', movie_list, sep='\n')
+    
+    return movie_list
 
+# view all recommended movies
+def recommend(request):
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+    if not request.user.is_active:
+        raise Http404
+
+    movie_list = collaborative_filtering(request)
     context = {'movie_list': movie_list}
     return render(request, 'recommend/recommend.html', context)
 

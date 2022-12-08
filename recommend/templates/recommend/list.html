@@ -25,8 +25,10 @@
 
 <p style="text-align:left;">
     <span style="float:right;">
-        <a href="{% url 'recommend' %}" class="btn"><button style="color:#fff;background-color:#4CAF50;padding:10px">Get Movie Recommendation</button></a>
-    <h2>Movie List</h2>
+        {% if recommended_movie %}
+            <a href="{% url 'recommend' %}" class="btn"><button style="color:#fff;background-color:#4CAF50;padding:10px">Get Movie Recommendation</button></a>
+        {% endif %}
+        <h2>Movie List</h2>
     </span>
 </p>
 <hr>
