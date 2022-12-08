@@ -154,12 +154,12 @@ def get_similar(movie_id,rating,corrMatrix):
         # 1. Item-to-Item collaborative filtering (item to item similar)
 
     #. Noted:
-        #  this algorithm using Item-to-Item collaborative filtering
-        #  find similar movies base on movie itself that rating given by other users
-        # Item-to-Item generally work much better than User-to-User a method,
+        #  this algorithm using Item-to-Item Collaborative filtering
+        #  filter similar movies base on movie itself that rating given by other users
+        # Item-to-Item generally work much better than User-to-User method,
             # the reason is generally you would see that there are lots more users in a system then the number
             # of the products or categories in that system, also user prference are dynamic and something that you might
-            # you might like in your early teens you might not like it growing older whereas in an Item-to-Item method
+            # like in your early teens you might not like it growing older whereas in an Item-to-Item method
             # the item stay the same respective of the time right (horror movie still the horror movie after 10 Ys)
 
         #. ref: 
