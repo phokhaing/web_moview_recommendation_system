@@ -1,3 +1,2 @@
-id,user_id,movie_id,rating
-270,14,21,5
-276,14,23,2
+movie__title,rating
+Frozen,5

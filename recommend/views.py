@@ -109,47 +109,40 @@ def watch(request):
 
 
 # To get similar movies based on user rating
-def get_similar(movie_id,rating,corrMatrix):
-    print(f'############### func get_similar() movie_id:{movie_id} ###################')
-    # corrMatrix value::
-        # movie_id  19   21   23
-        # movie_id
-        # 19       NaN  NaN  NaN
-        # 21       NaN  1.0  0.5
-        # 23       NaN  0.5  1.0
+def get_similar(movie,rating,corrMatrix):
+    print(f'############### func get_similar() movie:{movie} ###################')
+    # (movie, rating) value: (Frozen, 5)
 
-    # (movie_id, rating) value: (21, 4)
-
-    print(f'corrMatrix[movie_id]: {movie_id}')
-    print(corrMatrix[movie_id])
+    print(f'corrMatrix of movie: {movie}')
+    print(corrMatrix[movie])
     #output:
-        # corrMatrix[movie_id]: 21
-        # movie_id
-        # 19    NaN
-        # 21    1.0
-        # 23    0.5
-        # Name: 21, dtype: float64
+        # corrMatrix[movie]: Frozen
+        # movie__title
+        # Avatar                   -1.0
+        # Avengers: Infinity War   -1.0
+        # Frozen                    1.0
+        # Name: Frozen, dtype: float64
 
     # if a user has rated a movie as bad, we want al others similar movie to go down in the list
     # if rating below 3(dislike) will push all those towards even more negative side only that why -2.5
     # if rating positive 3,4 or 5 (like) will keep them on the top of list
-    similar_ratings = corrMatrix[movie_id]*(rating-2.5) 
-    print(f'--------- similar_ratings movie_id:{movie_id} --------------', similar_ratings, sep="\n")
+    similar_ratings = corrMatrix[movie]*(rating-2.5) 
+    print(f'--------- similar_ratings movie:{movie} --------------', similar_ratings, sep="\n")
     #output: 
-        # movie_id
-        # 19     NaN
-        # 21    1.50
-        # 23    0.75
-        # Name: 21, dtype: float64
+        # movie__title
+        # Avatar                   -2.5
+        # Avengers: Infinity War   -2.5
+        # Frozen                    2.5
+        # Name: Frozen, dtype: float64
 
     similar_ratings = similar_ratings.sort_values(ascending=False) # sort as DESC
-    print(f'--------- similar_ratings sort_values movie_id:{movie_id} --------------', similar_ratings, sep="\n")
+    print(f'--------- similar_ratings sort_values movie:{movie} --------------', similar_ratings, sep="\n")
     # output:
-        # movie_id
-        # 21    1.50
-        # 23    0.75
-        # 19     NaN
-        # Name: 21, dtype: float64
+        # movie__title
+        # Frozen                    2.5
+        # Avatar                   -2.5
+        # Avengers: Infinity War   -2.5
+        # Name: Frozen, dtype: float64
 
     return similar_ratings
 
@@ -187,8 +180,18 @@ def get_similar(movie_id,rating,corrMatrix):
 def recommendation_lgorithm(request):
 
     movies=pd.DataFrame(list(Movie.objects.all().values()))
-    movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
+    movie_rating=pd.DataFrame(list(Myrating.objects.all().values(
+        'user_id',
+        'movie__title', # Equal to Myrating.movie.title
+        'rating',
+    )))
     print('---- movie_rating ---- ', movie_rating, sep='\n')
+    # output:
+        # ---- movie_rating ---- 
+        #    user_id            movie__title  rating
+        # 0        8                  Avatar       5
+        # 1        8  Avengers: Infinity War       3
+        # 2       15                  Frozen       5
 
     movie_list = []
     if len(movie_rating) > 0:
@@ -197,8 +200,8 @@ def recommendation_lgorithm(request):
         movies.to_csv('movies.csv', index=False)
         movie_rating.to_csv('movie_rating.csv', index=False)
 
-        new_user=movie_rating.user_id.unique().shape[0]
-        print('---- new_user ---- ', new_user, sep='\n')
+        # new_user=movie_rating.user_id.unique().shape[0]
+        # print('---- new_user ---- ', new_user, sep='\n')
 
         current_user_id= request.user.id
         # if new user not rated any movie
@@ -207,146 +210,89 @@ def recommendation_lgorithm(request):
         #     q=Myrating(user=request.user,movie=movie,rating=0)
         #     q.save()
 
-        userRatings = movie_rating.pivot_table(index=['user_id'],columns=['movie_id'],values='rating')
+        userRatings = movie_rating.pivot_table(index=['user_id'],columns=['movie__title'],values='rating')
         print('--------- userRatings pivot_table --------------', userRatings, sep="\n")
         # output1:
-            # movie_id   19   21   23
+            #  movie__title  Avatar  Avengers: Infinity War  Frozen
             # user_id
-            # 9         0.0  4.0  NaN
-            # 10        0.0  NaN  NaN
-            # 13        0.0  4.0  5.0
+            # 8                5.0                     3.0     NaN
+            # 15               NaN                     NaN     5.0
 
         userRatings = userRatings.fillna(0,axis=1) # replace value NaN to 0
         print('--------- userRatings fillna 0 --------------', userRatings, sep="\n")
         #output2:
-            # movie_id   19   21   23
+            # movie__title  Avatar  Avengers: Infinity War  Frozen
             # user_id
-            # 9         0.0  4.0  0.0
-            # 10        0.0  0.0  0.0
-            # 13        0.0  4.0  5.0
+            # 8                5.0                     3.0     0.0
+            # 15               0.0                     0.0     5.0
 
         corrMatrix = userRatings.corr(method='pearson') # Compute pairwise correlation of columns, excluding NA/null values (pearson : standard correlation coefficient).
         print('--------- corrMatrix --------------', corrMatrix, sep="\n")
         # output: 
-            # movie_id  19   21   23
-            # movie_id
-            # 19       NaN  NaN  NaN
-            # 21       NaN  1.0  0.5
-            # 23       NaN  0.5  1.0
+            # movie__title            Avatar  Avengers: Infinity War  Frozen
+            # movie__title
+            # Avatar                     1.0                     1.0    -1.0
+            # Avengers: Infinity War     1.0                     1.0    -1.0
+            # Frozen                    -1.0                    -1.0     1.0
 
         # user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
-        user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values()))
-        if len(user) > 0:
-            user.to_csv('Myrating.csv', index=False)
-            user = user.drop(['user_id','id'],axis=1)
-            print('--------- user DataFrame --------------', user, sep="\n")
+        user_loggedin_rated = Myrating.objects.filter(
+            user=request.user,
+        ).values(
+            'movie__title', # Equal to Myrating.movie.title
+            'rating',
+        )
 
+        my_rating = pd.DataFrame(list(user_loggedin_rated))
+        if len(my_rating) > 0:
+
+            my_rating.to_csv('Myrating.csv', index=False)
+            # my_rating = my_rating.drop(['user_id','id'],axis=1)
+            print('--------- user DataFrame --------------', my_rating, sep="\n")
             # save Myrating as csv file
             # output: 
-                #     movie_id  rating
-                # 0         21       4
-                # 1         19       0
-                # 2         19       0
-                # 3         19       0
-                # 4         19       0
-                # 5         19       0
-                # 6         19       0
-                # 7         19       0
-                # 8         19       0
-                # 9         19       0
-                # 10        19       0
-                # 11        19       0
-                # 12        19       0
-                # 13        19       0
-                # 14        19       0
-                # 15        19       0
-                # 16        19       0
-                # 17        19       0
-                # 18        19       0
-                # 19        19       0
-                # 20        23       5
-                # 21        19       0
-                # 22        19       0
-                # 23        19       0
-                # 24        19       0
-                # 25        19       0
-                # 26        19       0
-                # 27        19       0
-                # 28        19       0
+                #   movie__title  rating
+                # 0       Frozen       5
         
-            user_filtered = [tuple(x) for x in user.values]
+            user_filtered = [tuple(x) for x in my_rating.values]
             print('--------- user_filtered --------------', user_filtered, sep="\n")
             # output:
-                # [(21, 4), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (23, 5), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0), (19, 0)]
+                # [('Frozen', 5)]
 
             movie_id_watched = [each[0] for each in user_filtered]
             print('--------- movie_id_watched --------------', movie_id_watched, sep="\n")
             # output:
-                # [21, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 23, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19]
+                # ['Frozen']
 
             similar_movies = pd.DataFrame()
             for movie,rating in user_filtered:
                 similar_movies = similar_movies.append(get_similar(movie,rating,corrMatrix),ignore_index = True)
                 # once similar_movies output:
-                    # movie_id
-                    # 21    1.50
-                    # 23    0.75
-                    # 19     NaN
-                    # Name: 21, dtype: float64
+                    # movie__title
+                    # Avatar                   -1.0
+                    # Avengers: Infinity War   -1.0
+                    # Frozen                    1.0
+                    # Name: Frozen, dtype: float64
 
             print('--------- similar_movies DataFrame -------------', similar_movies, sep='\n')
             # output:
-                # movie_id    21    23  19
-                # 0         1.50  0.75 NaN
-                # 1          NaN   NaN NaN
-                # 2          NaN   NaN NaN
-                # 3          NaN   NaN NaN
-                # 4          NaN   NaN NaN
-                # 5          NaN   NaN NaN
-                # 6          NaN   NaN NaN
-                # 7          NaN   NaN NaN
-                # 8          NaN   NaN NaN
-                # 9          NaN   NaN NaN
-                # 10         NaN   NaN NaN
-                # 11         NaN   NaN NaN
-                # 12         NaN   NaN NaN
-                # 13         NaN   NaN NaN
-                # 14         NaN   NaN NaN
-                # 15         NaN   NaN NaN
-                # 16         NaN   NaN NaN
-                # 17         NaN   NaN NaN
-                # 18         NaN   NaN NaN
-                # 19         NaN   NaN NaN
-                # 20        1.25  2.50 NaN
-                # 21         NaN   NaN NaN
-                # 22         NaN   NaN NaN
-                # 23         NaN   NaN NaN
-                # 24         NaN   NaN NaN
-                # 25         NaN   NaN NaN
-                # 26         NaN   NaN NaN
-                # 27         NaN   NaN NaN
-                # 28         NaN   NaN NaN
-                # 29         NaN   NaN NaN
-                # 30         NaN   NaN NaN
-                # 31         NaN   NaN NaN
-                # 32         NaN   NaN NaN
-                # 33         NaN   NaN NaN
-                # 34         NaN   NaN NaN
+                # movie__title  Frozen  Avatar  Avengers: Infinity War
+                # 0                2.5    -2.5                    -2.5
 
             movies_id = list(similar_movies.sum().sort_values(ascending=False).index)
             print('--------- similar_movies.sum().sort_values index -------------', movies_id, sep='\n')
-            # movies_id: [23, 21, 19]
-            # movie_id_watched: [21, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 23, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19]
+            # sort movies_id: ['Frozen', 'Avatar', 'Avengers: Infinity War']
+            # movie_id_watched: ['Frozen']
             
             movies_id_recommend = [each for each in movies_id if each not in movie_id_watched] # get only movie_id that not in movie_id_watched
             print('--------- movies_id_recommend -------------', movies_id_recommend, sep='\n')
-            # output: []
+            # output: ['Avatar', 'Avengers: Infinity War']
 
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(movies_id_recommend)])
+            preserved = Case(*[When(title=pk, then=pos) for pos, pk in enumerate(movies_id_recommend)])
             print('--------- preserved -------------', preserved, sep='\n')
             # output: CASE , ELSE Value(None)
 
-            movie_list=list(Movie.objects.filter(id__in = movies_id_recommend).order_by(preserved)[:10])
+            movie_list=list(Movie.objects.filter(title__in = movies_id_recommend).order_by(preserved)[:10])
             print('--------- movie_list -------------', movie_list, sep='\n')
     
     return movie_list
