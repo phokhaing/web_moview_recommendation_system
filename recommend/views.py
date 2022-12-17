@@ -152,31 +152,24 @@ def get_similar(movie,rating,corrMatrix):
         # 1. User-to-User collaborative filtering
         # 1. Item-to-Item collaborative filtering (item to item similar)
 
-    #. Noted:
-        #  this algorithm using Item-to-Item Collaborative filtering
-        #  filter similar movies base on movie itself that rating given by other users
-        # Item-to-Item generally work much better than User-to-User method,
-            # the reason is generally you would see that there are lots more users in a system then the number
-            # of the products or categories in that system, also user prference are dynamic and something that you might
-            # like in your early teens you might not like it growing older whereas in an Item-to-Item method
-            # the item stay the same respective of the time right (horror movie still the horror movie after 10 Ys)
-
+    #. Purpose:  
+        #  User-Based filtering similar tast base on movie itself that rating given by other users
         #. ref: 
             # https://www.youtube.com/watch?v=3ecNC-So0r4 
             # https://github.com/codeheroku/Introduction-to-Machine-Learning/blob/master/Collaborative%20Filtering/Movie%20Lens%20Collaborative%20Filtering.ipynb
-        
 
-# current flow:
-    # 1. new user who not yet rate any movies, when they access the recommendation feature, it will auto rate(score: 0) on a movie name "12 Years a Slave"
-    # 2. most movies rated & watched, will be recommended to users who not yet rate at top
-    # 3. For users who rated(min score: 1) or watched the movies(ex:a,b,c), then those movies(ex:a,b,c) will not show at recommendation feature for them anymore
-    # 4. others users will see all the movies(a,b,c) rated at recommendation feature, except own movies's rated and watched.
+    # Process flow:
+        # 1. new user who not yet rate any movies, they can't access the recommendation feature, they must search and rate any movies first
+        # 2. then algorithm can know your tast base on your rating, and find the closest similarity movies of others users rating 
+        # 3. most or closest similarity movies rated, will be recommended to users at top 
+        # 4. for movies that user logged in watched and rated, will not recommend to them any more 
+        # 5. We can know users like or dislike the movies base on there Rating score (1, 2) dislike, (3,4,5) liked
 
-# update to Flow:
-    # users movies's rated & watched will not recommend
-    # User-Based filtering that have similar taste, or rated similar movies, 
-        # ex: user (A) & (B) have similar rated to movie (Frozen), they both are considered users having similar likes & dislike
-        # then user (A) has rated 5 for movie (Advenger), next time when user (B) request for a recommendation the system will recommend 'Advenger' to user (B)
+    # example:
+        # users-to-user collaborative filtering algorithms
+        # User-Based filtering that have similar taste, or rated similar movies, 
+            # ex: user (A) & (B) have similar rated to movie (Frozen), they both are considered users having similar likes & dislike
+            # then user (A) has rated 5 for movie (Advenger), next time when user (B) request for a recommendation the system will recommend 'Advenger' to user (B)
 def recommendation_lgorithm(request):
 
     movies=pd.DataFrame(list(Movie.objects.all().values()))
@@ -237,7 +230,7 @@ def recommendation_lgorithm(request):
 
         # user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
         user_loggedin_rated = Myrating.objects.filter(
-            user=request.user,
+            user=request.user.id,
         ).values(
             'movie__title', # Equal to Myrating.movie.title
             'rating',
@@ -281,7 +274,7 @@ def recommendation_lgorithm(request):
 
             movies_id = list(similar_movies.sum().sort_values(ascending=False).index)
             print('--------- similar_movies.sum().sort_values index -------------', movies_id, sep='\n')
-            # sort movies_id: ['Frozen', 'Avatar', 'Avengers: Infinity War']
+            # sort movies_id: ['Frozen', 'Avatar', 'Avengers: Infinity War']  
             # movie_id_watched: ['Frozen']
             
             movies_id_recommend = [each for each in movies_id if each not in movie_id_watched] # get only movie_id that not in movie_id_watched
